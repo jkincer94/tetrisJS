@@ -1,0 +1,543 @@
+<canvas id="gc" width="200" height="400"></canvas>
+<script>
+window.onload=function() {
+	canv=document.getElementById("gc");
+	ctx=canv.getContext("2d");
+	document.addEventListener("keydown",keyPush);
+	setInterval(game,1000/30);
+}
+px=5;
+py=0;
+gs=tc=20;
+counter = 0; //will count to a full second
+shape=[];
+shape.push({x:5,y:0,color:"blueviolet"},{x:5+1,y:0,color:"blueviolet"},{x:5+2,y:0,color:"blueviolet"},{x:5+1,y:1,color:"blueviolet"});
+orientation=1;
+shapeType=5;
+settledShapes=[];
+
+function game() {
+	//main steps
+	drawGameBackground(); //draw background of game 
+	if(counter++ >= 30){ //natural timer independent of player input
+		dropOrSettle(); //check if shape should drop or settle on top of other shapes 
+	}
+	drawShape(); //draw the player controlled shape
+	drawSettledShapes(); //draw shapes that have been placed 
+}
+
+function keyPush(evt) {
+	switch(evt.keyCode) {
+		case 37: //left arrow
+			moveShapeLeft();
+			break;
+		case 38: //up arrow
+			if(py < 19){
+				rotate();
+			}
+			break;
+		case 39: //right arrow
+			moveShapeRight();
+			break;
+		case 40: //down arrow
+			moveShapeDown();
+			break;
+	}
+}
+
+function drawGameBackground(){
+	drawBlack();
+	drawGrid();
+}
+
+function rotate() {
+	orientation++;
+	if(orientation > 4)
+	{
+		orientation = 1;
+	}
+	switch(shapeType)
+	{
+		case 0: //square
+			break;
+		case 1: //L
+			rotateLShape();
+			break;
+		case 2: //reverse L
+			rotateReverseLShape();
+			break;
+		case 3: //reverse S
+			rotateReverseSShape();
+			break;
+		case 4: //S
+			rotateSShape();
+			break;
+		case 5: //T
+			rotateTShape();
+			break;
+		case 6: //line
+			rotateLineShape();
+			break;
+	}
+	
+}
+//rotation functions for every shape. Not optimal but the straightforward way to do it.
+function rotateLineShape(){
+	var centerX = shape[2].x;
+	var centerY = shape[2].y;
+	switch(orientation)
+	{
+		case 1:
+			shape = [{x:centerX-2,y:centerY,color:"aqua"},{x:centerX-1,y:centerY,color:"aqua"},{x:centerX,y:centerY,color:"aqua"},{x:centerX+1,y:centerY,color:"aqua"}];
+			break;
+		case 2:
+			shape = [{x:centerX,y:centerY-2,color:"aqua"},{x:centerX,y:centerY-1,color:"aqua"},{x:centerX,y:centerY,color:"aqua"},{x:centerX,y:centerY+1,color:"aqua"}];
+			break;
+		case 3:
+			shape = [{x:centerX-2,y:centerY,color:"aqua"},{x:centerX-1,y:centerY,color:"aqua"},{x:centerX,y:centerY,color:"aqua"},{x:centerX+1,y:centerY,color:"aqua"}];
+			break;
+		case 4:
+			shape = [{x:centerX,y:centerY-2,color:"aqua"},{x:centerX,y:centerY-1,color:"aqua"},{x:centerX,y:centerY,color:"aqua"},{x:centerX,y:centerY+1,color:"aqua"}];
+			break;
+	}
+	bringIntoBoundary();
+}
+
+function rotateLShape(){
+	var centerX = shape[1].x;
+	var centerY = shape[1].y;
+	switch(orientation)
+	{
+		case 1:
+			shape = [{x:centerX-1,y:centerY,color:"orange"},{x:centerX,y:centerY,color:"orange"},{x:centerX+1,y:centerY,color:"orange"},{x:centerX-1,y:centerY+1,color:"orange"}];
+			break;
+		case 2:
+			shape = [{x:centerX-1,y:centerY-1,color:"orange"},{x:centerX,y:centerY,color:"orange"},{x:centerX,y:centerY-1,color:"orange"},{x:centerX,y:centerY+1,color:"orange"}];
+			break;
+		case 3:
+			shape = [{x:centerX-1,y:centerY,color:"orange"},{x:centerX,y:centerY,color:"orange"},{x:centerX+1,y:centerY,color:"orange"},{x:centerX+1,y:centerY-1,color:"orange"}];
+			break;
+		case 4:
+			shape = [{x:centerX,y:centerY-1,color:"orange"},{x:centerX,y:centerY,color:"orange"},{x:centerX,y:centerY+1,color:"orange"},{x:centerX+1,y:centerY+1,color:"orange"}];
+			break;
+	}
+	bringIntoBoundary();
+}
+
+function rotateReverseLShape(){
+	var centerX = shape[1].x;
+	var centerY = shape[1].y;
+	switch(orientation)
+	{
+		case 1:
+			shape = [{x:centerX-1,y:centerY,color:"pink"},{x:centerX,y:centerY,color:"pink"},{x:centerX+1,y:centerY,color:"pink"},{x:centerX+1,y:centerY+1,color:"pink"}];
+			break;
+		case 2:
+			shape = [{x:centerX,y:centerY-1,color:"pink"},{x:centerX,y:centerY,color:"pink"},{x:centerX,y:centerY+1,color:"pink"},{x:centerX-1,y:centerY+1,color:"pink"}];
+			break;
+		case 3:
+			shape = [{x:centerX-1,y:centerY-1,color:"pink"},{x:centerX,y:centerY,color:"pink"},{x:centerX-1,y:centerY,color:"pink"},{x:centerX+1,y:centerY,color:"pink"}];
+			break;
+		case 4:
+			shape = [{x:centerX,y:centerY-1,color:"pink"},{x:centerX,y:centerY,color:"pink"},{x:centerX+1,y:centerY-1,color:"pink"},{x:centerX,y:centerY+1,color:"pink"}];
+			break;
+	}
+	bringIntoBoundary();
+}
+
+function rotateTShape(){
+	var centerX = shape[1].x;
+	var centerY = shape[1].y;
+	switch(orientation)
+	{
+		case 1:
+			shape = [{x:centerX-1,y:centerY,color:"blueviolet"},{x:centerX,y:centerY,color:"blueviolet"},{x:centerX+1,y:centerY,color:"blueviolet"},{x:centerX,y:centerY+1,color:"blueviolet"}];
+			break;
+		case 2:
+			shape[2]={x:centerX,y:centerY-1,color:"blueviolet"};
+			break;
+		case 3:
+			shape[3]={x:centerX+1,y:centerY,color:"blueviolet"};
+			break;
+		case 4:
+			shape[0]={x:centerX,y:centerY+1,color:"blueviolet"};
+			break;
+	}
+	bringIntoBoundary();
+}
+
+function rotateSShape(){
+	var centerX = shape[2].x;
+	var centerY = shape[2].y;
+	switch(orientation)
+	{
+		case 1:
+			shape = [{x:centerX-1,y:centerY+1,color:"lime"},{x:centerX+1,y:centerY,color:"lime"},{x:centerX,y:centerY,color:"lime"},{x:centerX,y:centerY+1,color:"lime"}];
+			break;
+		case 2:
+			shape = [{x:centerX-1,y:centerY-1,color:"lime"},{x:centerX-1,y:centerY,color:"lime"},{x:centerX,y:centerY,color:"lime"},{x:centerX,y:centerY+1,color:"lime"}];
+			break;
+		case 3:
+			shape = [{x:centerX+1,y:centerY-1,color:"lime"},{x:centerX-1,y:centerY,color:"lime"},{x:centerX,y:centerY,color:"lime"},{x:centerX,y:centerY-1,color:"lime"}];
+			break;
+		case 4:
+			shape = [{x:centerX+1,y:centerY+1,color:"lime"},{x:centerX+1,y:centerY,color:"lime"},{x:centerX,y:centerY,color:"lime"},{x:centerX,y:centerY-1,color:"lime"}];
+			break;
+	}
+	bringIntoBoundary();
+}
+
+function rotateReverseSShape(){
+	var centerX = shape[0].x;
+	var centerY = shape[0].y;
+	switch(orientation)
+	{
+		case 1:
+			shape = [{x:centerX,y:centerY,color:"red"},{x:centerX-1,y:centerY,color:"red"},{x:centerX,y:centerY+1,color:"red"},{x:centerX+1,y:centerY+1,color:"red"}];
+			break;
+		case 2:
+			shape = [{x:centerX,y:centerY,color:"red"},{x:centerX,y:centerY-1,color:"red"},{x:centerX-1,y:centerY,color:"red"},{x:centerX-1,y:centerY+1,color:"red"}];
+			break;
+		case 3:
+			shape = [{x:centerX,y:centerY,color:"red"},{x:centerX-1,y:centerY-1,color:"red"},{x:centerX,y:centerY-1,color:"red"},{x:centerX+1,y:centerY,color:"red"}];
+			break;
+		case 4:
+			shape = [{x:centerX,y:centerY,color:"red"},{x:centerX+1,y:centerY,color:"red"},{x:centerX+1,y:centerY-1,color:"red"},{x:centerX,y:centerY+1,color:"red"}];
+			break;
+	}
+	bringIntoBoundary();
+}
+
+
+function breakLines(){ //checks for completed rows
+	var maxHeight = 19;
+	for(var i=0; i<settledShapes.length; i++)
+	{
+		if(settledShapes[i].y < maxHeight){
+			maxHeight = settledShapes[i].y; //find highest block in settled shapes
+		}
+	}
+	for(var j=maxHeight; j<20; j++) //check for completed rows from bottom row to highest row
+	{
+		var recordColumns = new Array(10); //create dummy array for current row
+		for(var k=0; k<settledShapes.length ;k++)
+		{
+			if(settledShapes[k].y == j)
+			{
+				recordColumns[settledShapes[k].x] = 1; //populate x-coordinate of dummy array
+			}
+		}
+		var allColumnsFilled = true;
+		for(var x=0; x<recordColumns.length; x++)
+		{
+			if(recordColumns[x] == undefined) //if any x-coordinate of the current row is unpopulated, then row is complete
+			{
+				allColumnsFilled = false;
+			}
+		}
+		if(allColumnsFilled)
+		{
+			bringRowsDown(j); //if all x-cooridnates of current row are populated, row is complete
+		}
+	}
+}
+
+function bringRowsDown(row) //clear completed row, bring rows above it down one level
+{
+	for(var i=0; i<settledShapes.length; i++)
+	{
+		if(settledShapes[i].y < row)
+		{
+			settledShapes[i].y += 1; //bring above rows down
+		}
+		else if(settledShapes[i].y == row)
+		{
+			settledShapes.splice(i,1); //clear completed row
+			i--;
+		}
+	}
+}
+
+function drawBlack(){ //draw black background of game
+	ctx.fillStyle="black";
+	ctx.fillRect(0,0,canv.width,canv.height);
+}
+
+function drawGrid(){ //draw gird pattern of game
+	ctx.fillStyle="#3d3d3d";
+	for(var i=0;i<11;i++)
+	{
+		ctx.fillRect(i*20 - 2,0,2,400);
+	}
+	for(i=0;i<21;i++)
+	{
+		ctx.fillRect(0,i*20 - 2,200,2);
+	}
+}
+
+function dropOrSettle(){
+	if(shapeMustSettle()){ //check if shape cannot be dropped
+		settleShape(); //if not, settle shape
+		breakLines();  //check for resulting completed rows
+		startNewShape(); //generate new shape for player
+	}
+	else{
+		dropShape(); //if can be dropped, drop it
+		counter = 0;
+	}
+}
+
+function shapeMustSettle(){
+	for(var i=0; i<shape.length; i++)
+	{
+		shape[i].y += 1; //pseudo move shape down
+	}
+	if(movementConflict() == true) //check if the pseudo move will create conflicts
+	{
+		for(var k=0; k<shape.length; k++)
+		{
+			shape[k].y -=1;
+		}
+		return true; //if shape Must Settle out of conflict, return true
+	}
+	for(var j=0; j<shape.length; j++)
+	{
+		shape[j].y -= 1;
+	}
+	return false; //if no conflict and shape can drop, return false
+}
+
+function dropShape() {
+	for(var i=0;i<shape.length;i++)
+	{
+		shape[i].y++;
+	}	
+}
+
+function drawShape(){
+	ctx.fillStyle=getShapeColor();
+	for(var i=0;i<shape.length;i++)
+	{
+		ctx.fillRect(shape[i].x*gs,shape[i].y*gs,tc-2,tc-2);
+	}
+}
+
+function getShapeColor(){
+	switch(shapeType)
+	{
+		case 0: //square
+			return "yellow";
+			break;
+		case 1: //L
+			return "orange";
+			break;
+		case 2: //reverse L
+			return "pink";
+			break;
+		case 3: //reverse S
+			return "red";
+			break;
+		case 4: //S
+			return "lime";
+			break;
+		case 5: //T
+			return "blueviolet";
+			break;
+		case 6: //line
+			return "aqua";
+			break;
+	}	
+}
+
+function settleShape(){
+	for(var i=0;i<shape.length;i++)
+	{
+		settledShapes.push({x:shape[i].x,y:shape[i].y,color:shape[i].color});
+	}
+}
+
+function startNewShape(){
+	var shapeValue = getRandomIntInclusive(0,6);
+	shapeType = shapeValue;
+	var old_x = shape[0].x;
+	shape = [];
+	switch(shapeValue)
+	{
+		case 0: //square
+			shape.push({x:old_x,y:0,color:"yellow"},{x:old_x+1,y:0,color:"yellow"},{x:old_x,y:1,color:"yellow"},{x:old_x+1,y:1,color:"yellow"});
+			break;
+		
+		case 1:	//L-shape
+			shape.push({x:old_x,y:0,color:"orange"},{x:old_x+1,y:0,color:"orange"},{x:old_x+2,y:0,color:"orange"},{x:old_x,y:1,color:"orange"});
+			break;
+		
+		case 2: //reverse L-shape
+			shape.push({x:old_x,y:0,color:"pink"},{x:old_x+1,y:0,color:"pink"},{x:old_x+2,y:0,color:"pink"},{x:old_x+2,y:1,color:"pink"});
+			break;
+		
+		case 3: //reverse S-shape
+			shape.push({x:old_x+1,y:0,color:"red"},{x:old_x,y:0,color:"red"},{x:old_x+1,y:1,color:"red"},{x:old_x+2,y:1,color:"red"});
+			break;
+		
+		case 4: //S-shape
+			shape.push({x:old_x,y:1,color:"lime"},{x:old_x+1,y:1,color:"lime"},{x:old_x+1,y:0,color:"lime"},{x:old_x+2,y:0,color:"lime"});
+			break;
+		
+		case 5: //T-shape
+			shape.push({x:old_x,y:0,color:"BlueViolet"},{x:old_x+1,y:0,color:"BlueViolet"},{x:old_x+2,y:0,color:"BlueViolet"},{x:old_x+1,y:1,color:"BlueViolet"});
+			break;
+		
+		case 6: //line
+			shape.push({x:old_x,y:0,color:"Aqua"},{x:old_x+1,y:0,color:"Aqua"},{x:old_x+2,y:0,color:"Aqua"},{x:old_x+3,y:0,color:"Aqua"});
+			break;
+	}
+	bringIntoBoundary();
+	orientation = 1;
+}
+
+function bringIntoBoundary(){
+	var blocksInBound = 0;
+	var redoCheck = false;
+	while(blocksInBound != 4)
+	{
+		if(shape[blocksInBound].x > 9)
+		{
+			for(var i=0;i<shape.length;i++)
+			{
+				shape[i].x -= 1;
+			}
+			redoCheck = true;
+		}
+		if(shape[blocksInBound].x < 0)
+		{
+			for(var j=0;j<shape.length;j++)
+			{
+				shape[j].x += 1;
+			}
+			redoCheck = true;
+		}
+		if(shape[blocksInBound].y < 0)
+		{
+			for(var k=0;k<shape.length;k++)
+			{
+				shape[k].y += 1;
+			}
+			redoCheck = true;
+		}
+		if(shape[blocksInBound].y > 19)
+		{
+			for(var l=0;l<shape.length;l++)
+			{
+				shape[l].y -= 1;
+			}
+			redoCheck = true;
+		}
+		if(redoCheck)
+		{
+			redoCheck = false;
+			blocksInBound = 0;
+		}
+		else
+		{
+			blocksInBound++;
+		}
+	}
+}
+
+function getRandomIntInclusive(min,max){
+	min = Math.ceil(min);
+	max = Math.floor(max);
+	return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function drawSettledShapes(){
+	for(var i=0; i<settledShapes.length; i++)
+	{	
+		ctx.fillStyle = settledShapes[i].color;
+		ctx.fillRect(settledShapes[i].x*gs,settledShapes[i].y*gs,tc-2,tc-2);
+	}
+}
+
+function moveShapeRight(){
+	for(var i=0; i<shape.length; i++)
+	{
+		shape[i].x += 1;
+	}
+	if(movementConflict() == true)
+	{
+		for(var j=0; j<shape.length; j++)
+		{
+			shape[j].x -= 1;
+		}
+		return;
+	}
+}
+
+function moveShapeLeft(){
+	for(var i=0; i<shape.length; i++)
+	{
+		shape[i].x -= 1;
+	}
+	if(movementConflict() == true)
+	{
+		for(var j=0; j<shape.length; j++)
+		{
+			shape[j].x += 1;
+		}
+		return;
+	}
+}
+
+function moveShapeDown(){
+	for(var i=0; i<shape.length; i++)
+	{
+		shape[i].y += 1;
+	}
+	if(movementConflict())
+	{
+		for(var j=0; j<shape.length; j++)
+		{
+			shape[j].y -= 1;
+		}
+		return;
+	}
+}
+
+function movementConflict(){ //checks if shape crosses boundary or conflicts with settled Shapes
+	if(boundaryConflict() || settledShapesConflict())
+	{
+		return true;	
+	}
+	return false;
+}
+
+function boundaryConflict(){
+	for(var i=0; i<shape.length ;i++)
+	{
+		if(shape[i].x < 0 || shape[i].x > 9
+		|| shape[i].y < 0 || shape[i].y > 19)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+function settledShapesConflict(){
+	for(var i=0; i<shape.length ;i++)
+	{
+		for(var j=0; j<settledShapes.length; j++)
+		{
+			if(shape[i].x == settledShapes[j].x
+			&& shape[i].y == settledShapes[j].y)
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+
+
+</script>
